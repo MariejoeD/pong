@@ -34,13 +34,40 @@ class PongGame:
         self.canvas.create_text(self.width // 2, self.height // 2 + 50, text="2 Players", font=("Arial", 30),
                                 fill="white", tags="two_players")
 
-        self.canvas.tag_bind("one_player", "<Button-1>", lambda e: self.start_game(single_player=True))
-        self.canvas.tag_bind("two_players", "<Button-1>", lambda e: self.start_game(single_player=False))
+        self.canvas.tag_bind("one_player", "<Button-1>", lambda e: self.enter_names(single_player=True))
+        self.canvas.tag_bind("two_players", "<Button-1>", lambda e: self.enter_names(single_player=False))
 
-    def start_game(self, single_player):
+    def enter_names(self, single_player):
+        self.single_player = single_player
         self.canvas.destroy()
 
-        self.single_player = single_player
+        self.name_frame = tk.Frame(self.root, bg="black")
+        self.name_frame.pack(fill="both", expand=True)
+
+        tk.Label(self.name_frame, text="Enter Player Names", font=("Arial", 30), bg="black", fg="white").pack(pady=20)
+
+        self.name1_label = tk.Label(self.name_frame, text="Player 1 Name:", font=("Arial", 20), bg="black", fg="white")
+        self.name1_label.pack(pady=10)
+        self.name1_entry = tk.Entry(self.name_frame, font=("Arial", 20))
+        self.name1_entry.pack(pady=10)
+
+        if not self.single_player:
+            self.name2_label = tk.Label(self.name_frame, text="Player 2 Name:", font=("Arial", 20), bg="black", fg="white")
+            self.name2_label.pack(pady=10)
+            self.name2_entry = tk.Entry(self.name_frame, font=("Arial", 20))
+            self.name2_entry.pack(pady=10)
+
+        tk.Button(self.name_frame, text="Start Game", font=("Arial", 20), command=self.start_game).pack(pady=20)
+
+    def start_game(self):
+        self.player1_name = self.name1_entry.get()
+        if not self.single_player:
+            self.player2_name = self.name2_entry.get()
+        else:
+            self.player2_name = "Computer"
+
+        self.name_frame.destroy()
+
         self.score_left = 0
         self.score_right = 0
         self.paused = False
@@ -71,8 +98,8 @@ class PongGame:
 
         # Score display
         self.score_display = self.canvas.create_text(self.width // 2, 30,
-                                                     text=f"{self.score_left} - {self.score_right}", font=("Arial", 30),
-                                                     fill="white")
+                                                     text=f"{self.player1_name} {self.score_left} - {self.score_right} {self.player2_name}",
+                                                     font=("Arial", 30), fill="white")
 
         # Create buttons on canvas
         self.pause_button = tk.Button(self.canvas, text="Pause", command=self.toggle_pause)
@@ -148,7 +175,7 @@ class PongGame:
             self.reset_ball()
 
     def update_score(self):
-        self.canvas.itemconfig(self.score_display, text=f"{self.score_left} - {self.score_right}")
+        self.canvas.itemconfig(self.score_display, text=f"{self.player1_name} {self.score_left} - {self.score_right} {self.player2_name}")
 
     def reset_ball(self):
         self.canvas.coords(self.ball, self.canvas.winfo_width() // 2 - self.ball_size // 2,
